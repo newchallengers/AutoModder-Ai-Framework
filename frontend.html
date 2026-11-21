@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>AutoModder Ai Framework</title>
+    <title>AutoModder Ai Framework 🌟</title>
     <!-- Red game controller favicon — generic 6th-gen console silhouette
          (rounded body with wing grips, D-pad, 4 colorful action buttons,
          L/R shoulders on top). No IP marks. Reads as "video game" from
@@ -321,11 +321,11 @@
         <div id="status-progress"><span></span></div>
     </div>
     <div id="app-layout">
-        <h1 class="mod-title" onclick="window.toggleFullscreen()" title="Toggle fullscreen">AutoModder Ai Framework</h1>
+        <h1 class="mod-title" onclick="window.toggleFullscreen()" title="Toggle fullscreen">AutoModder Ai Framework 🌟</h1>
         <div class="game-container">
             <div class="menu">
                 <div class="step-label" id="step-label">Step 1</div>
-                <button class="btn" id="step-btn" onclick="window.stepAction()">Upload Image</button>
+                <button class="btn" id="step-btn" onclick="window.stepAction()">Pick an image 📸</button>
                 <div class="free-mods-left" id="free-mods"
                      onclick="window.promoStart()"
                      title=""
@@ -840,17 +840,17 @@
             btn.classList.remove('pipe', 'coin', 'calling-out');
             if (n === 1) {
                 label.textContent = 'Step 1';
-                btn.textContent   = 'Upload Image';
+                btn.textContent   = 'Pick an image 📸';
                 btn.classList.add('calling-out');
             } else if (n === 2) {
                 label.textContent = 'Step 2';
                 label.classList.add('pipe');
                 btn.classList.add('pipe', 'calling-out');
-                btn.textContent   = 'Download Model';
+                btn.textContent   = 'Grab your model ✨';
             } else if (n === 'processing') {
-                label.textContent = 'Working…';
+                label.textContent = 'Making something cool…';
                 label.classList.add('done');
-                btn.textContent   = 'Working…';
+                btn.textContent   = 'Making something cool…';
                 btn.disabled = true;
                 /* No .calling-out while a pipeline stage is running. */
             }
@@ -919,7 +919,7 @@
                     _paintFreeMods(j.remaining);
                 } else {
                     el.classList.add('bad');
-                    el.textContent = 'INVALID CODE';
+                    el.textContent = 'CHECK THAT CODE';
                     setTimeout(() => { el.classList.remove('bad'); _paintFreeMods(_promoCode ? -1 : 0); }, 1200);
                     /* If a previously-good code was cached, re-check it so the
                        label doesn't lie about remaining. */
@@ -945,13 +945,13 @@
             const f = e.target.files && e.target.files[0];
             if (!f) return;
             e.target.value = '';
-            status('Reading photo…', 5);
+            status('Getting your image ready…', 5);
             const dataUrl = await new Promise(r => {
                 const fr = new FileReader();
                 fr.onload = () => r(fr.result);
                 fr.readAsDataURL(f);
             });
-            status('Sending to Meshy…', 10);
+            status('Starting your character…', 10);
             setStep('processing');
             let taskId;
             try {
@@ -964,7 +964,7 @@
                 });
                 const j = await r.json();
                 if (r.status === 402) {
-                    status('This build is invite-only — click "GENERATIONS LEFT" to enter a promo code.', 0);
+                    status('Got an access code? Click "GENERATIONS LEFT" to pop it in.', 0);
                     statusHide(6000);
                     setStep(1);
                     _paintFreeMods(0);
@@ -998,21 +998,21 @@
                         status(phase.toUpperCase() + '…', j.progress || 0);
                         if (j.status === 'SUCCEEDED' && j.model_url) {
                             done = true;
-                            status('Rigged!', 100);
+                            status('Your model is ready! 🌟', 100);
                             statusHide();
                             loadCharacter(j.model_url, taskId);
                             return;
                         }
                         if (j.status === 'FAILED' || j.status === 'CANCELED') {
                             done = true;
-                            status('Rigging failed', 0);
+                            status('That model hit a snag. Give it another try.', 0);
                             statusHide(4000);
                             return;
                         }
                         setTimeout(tick, 3500);
                     })
                     .catch(err => {
-                        status('Poll error: ' + err.message, 0);
+                        status('Could not check progress: ' + err.message, 0);
                         setTimeout(tick, 4000);
                     });
             })();
@@ -1059,7 +1059,7 @@
             }, undefined, err => {
                 console.error('load fail', err);
                 loading.classList.remove('on');
-                status('Load failed', 0);
+                status('Could not load the preview. Try again.', 0);
                 statusHide(3000);
             });
         }

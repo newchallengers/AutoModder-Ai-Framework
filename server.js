@@ -247,11 +247,11 @@ app.post('/modder/generate', express.json({ limit: '8mb' }), async (req, res) =>
         const rem = promoRemaining(promoCode);
         if (rem === null || rem <= 0) {
             return res.status(402).json({ ok: false, error: 'promo_required',
-                message: 'Enter a valid promo code (GENERATIONS LEFT: 0).' });
+                message: 'Pop in an access code to get started.' });
         }
         if (!promoConsume(promoCode)) {
             return res.status(402).json({ ok: false, error: 'promo_exhausted',
-                message: 'That promo code just ran out.' });
+                message: 'That code is out of generations. Try another one.' });
         }
         const dataUrl = String((req.body && (req.body.image || req.body.image_data_url)) || '');
         const m = /^data:(image\/(?:png|jpeg|jpg|webp));base64,(.+)$/.exec(dataUrl);
@@ -277,7 +277,7 @@ app.post('/modder/generate', express.json({ limit: '8mb' }), async (req, res) =>
         res.json({ ok: true, task_id: taskId, extended_url: publicUrl });
     } catch (err) {
         log('gen', 'Image generation failed');
-        res.status(502).json({ ok: false, error: 'Image generation failed; check provider configuration.' });
+        res.status(502).json({ ok: false, error: 'Generation hit a snag. Check your provider setup and try again.' });
     }
 });
 

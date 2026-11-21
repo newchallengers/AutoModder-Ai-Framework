@@ -1,74 +1,90 @@
-# AutoModder Ai Framework
+# AutoModder Ai Framework 🌟 [open source]
 
-A starter project for image-based character creation, with a browser preview and downloadable 3D assets.
+Guys, the goal has always been to make modding easier for everyone. This is the dev side of that journey 😎
 
-Explore [Auto Modder](https://automodder.site).
+**TL;DR:** Want to build and experiment? You're in the right place. Want to jump into the hosted version? Check out **[automodder.site](https://automodder.site)** — that version runs on my servers and handles the AI credits for you.
 
-## Workflow
+## A little backstory / lore
 
-1. Upload a character image.
-2. Prepare the image using your configured image service.
-3. Generate a 3D asset with Meshy.
-4. Preview and download the model.
-5. Continue asset review in Blender or your preferred 3D tools.
+I've been making mods for decades. OGs might remember Shitty Melee and USA Melee. Lawl. I got serious about NewChallengers in 2019, but sharing what I learn goes all the way back to my SmashBoards guides.
 
-The template covers image generation, task polling, preview, and model downloads.
-Game-specific processing and export are separate integrations.
+The idea hasn't changed: make this stuff easier to get into, then see what everyone makes with it. AI tools have opened up a whole new world for that. It's pretty wild tbh.
 
-## Setup
+## So what's in here? 👀
 
-Use Node.js 22 or later and run `npm install`.
+An image-to-3D starting point you can run, mess with, and build on:
 
-Set these environment variables before starting the server:
+1. Pick a character image.
+2. Let your configured image service prepare it.
+3. Send it to Meshy to make a 3D model.
+4. Spin it around in the browser and grab the download.
+5. Open it in Blender or whatever 3D tools you like and keep going.
 
-| Variable | Purpose |
+This repo handles image generation, progress updates, previews, and model downloads. Connecting those assets to a particular game is a separate integration. The hosted AutoModder has its own workflow — check it out if you want the ready-to-use experience.
+
+## Let's get it running 🛠️
+
+You'll want Node.js 22 or newer. Grab the dependencies:
+
+```bash
+npm install
+```
+
+Then set up these environment variables. Bring your own API accounts for this version:
+
+| Variable | What goes here |
 | --- | --- |
-| `MESHY_KEY_FILE` | Path to a file containing your Meshy API key. |
-| `GEMINI_KEY_FILE` | Path to a file containing your image API key. |
-| `IMAGE_PROMPT_FILE` | Path to your image preparation instructions. |
-| `IMAGE_MODELS` | Comma-separated image model identifiers supported by your provider. |
-| `PROMO_CODES_FILE` | Path to a JSON file defining generation allowances. |
-| `PUBLIC_BASE_URL` | Public HTTPS origin that Meshy can use to fetch generated images. |
-| `STORAGE_ROOT` | Working storage directory; defaults to `./storage`. |
-| `MESHY_MODEL` | Optional Meshy model selection; otherwise uses the service default. |
-| `PORT` | Local HTTP port; defaults to `3010`. |
+| `MESHY_KEY_FILE` | The path to a file with your Meshy API key. |
+| `GEMINI_KEY_FILE` | The path to a file with your image API key. |
+| `IMAGE_PROMPT_FILE` | A file with your image preparation instructions. Make it your own. |
+| `IMAGE_MODELS` | Your provider's image model identifiers, separated by commas. |
+| `PROMO_CODES_FILE` | A JSON file with your access codes and generation counts. |
+| `PUBLIC_BASE_URL` | Your public HTTPS origin, so Meshy can fetch the generated images. |
+| `STORAGE_ROOT` | Where your working files go. Defaults to `./storage`. |
+| `MESHY_MODEL` | Optional. Pick a Meshy model, or leave it out to use their default. |
+| `PORT` | Your local HTTP port. Defaults to `3010`. |
 
-An allowance file has this structure; choose your own access code:
+Here's what the access-code file looks like. Pick your own code:
 
 ```json
 {"YOUR_ACCESS_CODE": {"remaining": 5}}
 ```
 
-Keep keys, prompts, and deployment configuration outside the checkout.
-Start with `npm start`, then open the server in your browser. For remote deployments,
-put the local server behind an HTTPS reverse proxy. Generated images are served from
-`/public/uploads` so the generation provider can retrieve them.
+Keep your keys, prompts, and server configuration outside the repo. Those are yours.
 
-The frontend uses the same origin by default. For development with separate hosting,
-set `?api=https://your-api.example.com` in the frontend URL.
+Now start it up:
 
-## Project layout
+```bash
+npm start
+```
 
-- `frontend.html`: image upload, interactive preview, and model download.
-- `server.js`: provider integration, task status, storage, and HTTP routes.
-- `test/`: local configuration and route checks.
+Open `http://localhost:3010` in your browser (or whatever port you picked). To make generation work on a hosted setup, put the server behind an HTTPS reverse proxy. Images live at `/public/uploads` so Meshy can reach them.
 
-## API
+Hosting the frontend separately? Add `?api=https://your-api.example.com` to its URL. Otherwise it talks to the same server you're viewing it on.
 
-| Endpoint | Purpose |
+## Where's everything?
+
+- `frontend.html` — the upload screen, 3D preview, and download button.
+- `server.js` — talks to the providers, tracks jobs, and handles files and requests.
+- `test/` — a few checks to help catch broken stuff before you ship it.
+
+## API stuff, if you're building on this
+
+| Endpoint | What it does |
 | --- | --- |
-| `GET /modder/health` | Check service availability and generation configuration. |
-| `POST /modder/promo/check` | Check a generation allowance. |
-| `POST /modder/generate` | Submit a base64 image with an access code. |
-| `GET /modder/status/:taskId` | Poll generation progress. |
-| `GET /modder/model?url=…` | Retrieve a provider-hosted preview asset. |
-| `GET /modder/fbx/:rigTaskId` | Download the generated model. |
+| `GET /modder/health` | Is the server up? Is generation configured? |
+| `POST /modder/promo/check` | Check how many generations an access code has left. |
+| `POST /modder/generate` | Send a base64 image and an access code to start a job. |
+| `GET /modder/status/:taskId` | See how the job is doing. |
+| `GET /modder/model?url=…` | Fetch a preview model from the provider. |
+| `GET /modder/fbx/:rigTaskId` | Grab the generated model. |
 
-## Development
+## Mess with it, make something cool ✨
 
-Run `npm test` for local checks. Provider calls require your own account configuration
-and may incur charges. Validate generated assets before using them in another project.
+Run `npm test` when you change things. The tests use simulated provider responses, so they don't spend your credits. Actual generation uses your API accounts and can cost money. Give your models a look before using them elsewhere.
 
-## License
+I want more people trying this stuff, sharing ideas, and making things nobody else would have thought of. Go see what people are making on [AutoModder](https://automodder.site), too!
 
-MIT. See [LICENSE](LICENSE). Use images and assets you have permission to process.
+## Open source, go have fun
+
+MIT license — see [LICENSE](LICENSE). Use images and assets you have permission to work with.

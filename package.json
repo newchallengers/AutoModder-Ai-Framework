@@ -2,7 +2,7 @@
   "name": "automodder-ai-framework",
   "version": "0.1.0",
   "private": true,
-  "description": "Image-based character creation with browser preview and model downloads.",
+  "description": "Pick an image, make a 3D character, and build something cool. The dev side of AutoModder 🌟",
   "scripts": {
     "start": "node server.js",
     "test": "node --test"
