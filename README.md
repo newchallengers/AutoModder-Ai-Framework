@@ -1,4 +1,4 @@
-# AutoModder MCP
+# AutoModder Ai Framework
 
 A starter project for image-based character creation, with a browser preview and downloadable 3D assets.
 
