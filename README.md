@@ -1,151 +1,74 @@
-# image-to-mod
+# Image to Mod
 
-Photo → automatic **Super Smash Bros. Melee** character skin mod.
+A starter project for image-based character creation, with a browser preview and downloadable 3D assets.
 
-Upload a selfie, get back a real `PlCa.dat` (or any other Melee character `.DAT`
-you supply) with your face on it — ready to drop into your ISO.
+Explore [Auto Modder](https://automodder.site).
 
-Live at **[scuffedskins.com/modder](https://scuffedskins.com/modder)**.
+## Workflow
 
-## The pipeline
+1. Upload a character image.
+2. Prepare the image using your configured image service.
+3. Generate a 3D asset with Meshy.
+4. Preview and download the model.
+5. Continue asset review in Blender or your preferred 3D tools.
 
-```
-photo.png
-   │
-   ▼
-[1] Gemini nano-banana
-    strict T-pose, standardized proportions, grey background
-   │
-   ▼
-[2] Meshy AI
-    image-to-3d  →  auto-rigged FBX
-   │
-   ▼
-[3] hsdcli extract-scene
-    parses your uploaded base .DAT via a headless port of Ploaj/HSDLib,
-    emits Falcon's real 63-JOBJ skeleton + 17 meshes as Collada
-   │
-   ▼
-[4] Blender (headless)
-    imports Falcon.dae armature + your Meshy FBX side-by-side,
-    auto-aligns bounding boxes, Data-Transfer VGROUP_WEIGHTS,
-    parents your mesh under Falcon's armature, decimates to Melee's
-    poly budget, exports as FBX
-   │
-   ▼
-[5] hsdcli splice-mesh
-    loads the base .DAT, swaps the character mesh via the ported
-    HSDLib ModelImporter, saves modded .DAT
-   │
-   ▼
-downloadable mod-*.dat
+The template covers image generation, task polling, preview, and model downloads.
+Game-specific processing and export are separate integrations.
+
+## Setup
+
+Use Node.js 22 or later and run `npm install`.
+
+Set these environment variables before starting the server:
+
+| Variable | Purpose |
+| --- | --- |
+| `MESHY_KEY_FILE` | Path to a file containing your Meshy API key. |
+| `GEMINI_KEY_FILE` | Path to a file containing your image API key. |
+| `IMAGE_PROMPT_FILE` | Path to your image preparation instructions. |
+| `IMAGE_MODELS` | Comma-separated image model identifiers supported by your provider. |
+| `PROMO_CODES_FILE` | Path to a JSON file defining generation allowances. |
+| `PUBLIC_BASE_URL` | Public HTTPS origin that Meshy can use to fetch generated images. |
+| `STORAGE_ROOT` | Working storage directory; defaults to `./storage`. |
+| `MESHY_MODEL` | Optional Meshy model selection; otherwise uses the service default. |
+| `PORT` | Local HTTP port; defaults to `3010`. |
+
+An allowance file has this structure; choose your own access code:
+
+```json
+{"YOUR_ACCESS_CODE": {"remaining": 5}}
 ```
 
-End-to-end from HTTP POST to downloadable `.DAT`: **~3.7 seconds**
-(after Meshy's ~5 min photo→rig, which happens once per character upload).
+Keep keys, prompts, and deployment configuration outside the checkout.
+Start with `npm start`, then open the server in your browser. For remote deployments,
+put the local server behind an HTTPS reverse proxy. Generated images are served from
+`/public/uploads` so the generation provider can retrieve them.
 
-## Repository layout
+The frontend uses the same origin by default. For development with separate hosting,
+set `?api=https://your-api.example.com` in the frontend URL.
 
-```
-frontend.html                the single-file UI (three.js, Mario BG, drag-rotate)
-server.js                    standalone Express backend, ~470 lines
-/blender/splice.py           headless Blender script — Data Transfer + decimate
-/hsdcli/HSDCli.cs            C# CLI wrapping HSDRaw + IONET
-/hsdcli/HSDCli.csproj
-/hsdcli/hsdlib_import/       adapted-headless HSDRaw import files (see LICENSE)
-LICENSE                      MIT + third-party attributions
-README.md                    (this file)
-```
+## Project layout
 
-## Requirements
+- `frontend.html`: image upload, interactive preview, and model download.
+- `server.js`: provider integration, task status, storage, and HTTP routes.
+- `test/`: local configuration and route checks.
 
-You supply your own installations of:
+## API
 
-| Tool                | What for                             | Where to get                                    |
-|---------------------|--------------------------------------|-------------------------------------------------|
-| Node.js 18+         | run `modder.js`                      | https://nodejs.org                              |
-| .NET 8 SDK          | build & run `hsdcli`                 | `dotnet-install.sh --channel 8.0`               |
-| Blender 3.4+        | run `splice.py` headless             | `apt install blender` or the tarball            |
-| Ploaj/HSDLib        | provides `HSDRaw.dll` + `IONET.dll`  | `git clone https://github.com/Ploaj/HSDLib`     |
-| Meshy AI key        | image-to-3d + rigging                | https://meshy.ai                                |
-| Google Gemini key   | nano-banana image model              | https://aistudio.google.com                     |
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /modder/health` | Check service availability and generation configuration. |
+| `POST /modder/promo/check` | Check a generation allowance. |
+| `POST /modder/generate` | Submit a base64 image with an access code. |
+| `GET /modder/status/:taskId` | Poll generation progress. |
+| `GET /modder/model?url=…` | Retrieve a provider-hosted preview asset. |
+| `GET /modder/fbx/:rigTaskId` | Download the generated model. |
 
-## Building
+## Development
 
-```bash
-# 1. Get HSDLib + build HSDRaw.dll
-git clone https://github.com/Ploaj/HSDLib /opt/HSDLib
-cd /opt/HSDLib/HSDRaw && dotnet build -c Release   # emits HSDRaw.dll
-
-# 2. Build our CLI (references HSDRaw.dll + IONET.dll from HSDLib repo)
-cd /path/to/image-to-mod/hsdcli
-dotnet build -c Release   # emits bin/Release/net8.0/hsdcli.dll
-
-# 3. Node deps for the server
-cd /path/to/image-to-mod
-npm install express axios
-
-# 4. Put your API keys somewhere server.js can read them
-mkdir -p ~/.config
-echo YOUR_MESHY_TOKEN  > ~/.config/modder-meshy.key
-echo YOUR_GEMINI_KEY   > ~/.config/modder-gemini.key
-chmod 600 ~/.config/modder-*.key
-```
-
-## Running
-
-```bash
-# One-shot (foreground)
-PORT=3010 \
-STORAGE_ROOT=/var/lib/modder \
-BLENDER_SCRIPT=/path/to/image-to-mod/blender/splice.py \
-HSDCLI_DLL=/path/to/image-to-mod/hsdcli/bin/Release/net8.0/hsdcli.dll \
-PUBLIC_BASE_URL=https://your.example.com \
-node server.js
-```
-
-Or wire it up to `supervisord` / `systemd` for auto-restart.
-
-`frontend.html` calls a backend at `const API = 'https://your.example.com/api-modder'`
-by default. You can override at runtime with `?api=http://localhost:3010`.
-
-## HTTP API
-
-All endpoints return JSON unless noted. Universal CORS (`Access-Control-Allow-Origin: *`).
-
-| Method + path                          | Purpose                                                          |
-|----------------------------------------|------------------------------------------------------------------|
-| `GET  /modder/health`                  | Config sanity check: keys loaded, external tools present         |
-| `POST /modder/generate`                | Body `{image: "data:image/png;base64,…"}` → `{task_id}`          |
-| `GET  /modder/status/:taskId`          | Meshy polling: image → rigging → SUCCEEDED with `rig_task_id`    |
-| `GET  /modder/model?url=<meshy-url>`   | CORS-friendly proxy for Meshy CDN GLB fetches                    |
-| `GET  /modder/fbx/:rigTaskId`          | Streams the rigged FBX (auto-mirrored from Meshy)                |
-| `POST /modder/base-dat`                | Body `{filename, data_b64}` → `{dat_id}`. Your base .DAT upload  |
-| `POST /modder/process/:rigTaskId`      | Body `{base_dat_id}` → runs the full pipeline, returns `.DAT`    |
-| `GET  /modder/download/:filename`      | Streams a produced `mod-*.dat` or `splice-*.fbx`                 |
-| `POST /modder/dev-iso?name=…`          | Raw binary body: stream-upload a Melee ISO (dev-only)            |
-| `POST /modder/dev-fixture`             | Body `{filename, data_b64}`: seed a reference .DAT (dev-only)    |
-| `GET  /modder/logs?limit=N`            | Recent server ring-buffer logs                                   |
-| `POST /modder/frontlog`                | Body `{msg}`: forward a browser-side log line into server buffer |
-
-## Copyright
-
-**You must upload your own base .DAT** — extracted from your own legally-owned
-Melee disc. Same for the ISO if you use the (WIP) in-game test loop. Nothing
-Nintendo/HAL copyrighted is bundled with this software. Uploads are stored
-SHA-256-hashed and are never publicly listed.
-
-Super Smash Bros. Melee is © 2001 HAL Laboratory / Nintendo. This project has
-no affiliation with them, or with Ploaj who wrote HSDLib.
-
-## Credits
-
-- **Ploaj** — for HSDRaw / HSDRawViewer / IONET, without which none of this works.
-- **DRGN** — for DAT Texture Wizard, whose ISO-injection primitives inspired the
-  planned in-game test loop.
-- The Melee modding community for reverse-engineering HSD file format documentation
-  over the past twenty-plus years.
+Run `npm test` for local checks. Provider calls require your own account configuration
+and may incur charges. Validate generated assets before using them in another project.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for full terms and third-party attributions.
+MIT. See [LICENSE](LICENSE). Use images and assets you have permission to process.

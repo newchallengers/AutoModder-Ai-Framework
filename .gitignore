@@ -1,32 +1,13 @@
-# Build outputs
-bin/
-obj/
 node_modules/
-package-lock.json
-
-# Secrets & config
+storage/
+private/
 *.key
 *.token
+*.prompt
 .env
-.env.local
-
-# User uploads / server storage (whatever STORAGE_ROOT points at)
-uploads/
-base-dats/
-isos/
-mods/
-logs/
-state/
-
-# HSDLib submodule (users clone Ploaj/HSDLib themselves)
-/hsdcli/HSDRaw.dll
-/hsdcli/IONET.dll
-
-# OS
+.env.*
 .DS_Store
 Thumbs.db
-
-# Editor
 .vscode/
 .idea/
 *.swp

@@ -312,96 +312,6 @@
             75%     { transform: translateX(4px); }
         }
         .free-mods-left.bad { animation: promo-shake 0.35s ease; }
-        /* ISO upload callout. Loud + red until an ISO is present, then
-           collapses to a small green pill in the corner. */
-        #dev-iso-status {
-            position: fixed; top: 76px; right: 12px; z-index: 26;
-            font: 12px system-ui; color: #fff;
-            background: rgba(20,20,25,.9);
-            padding: 6px 12px; border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.5);
-            max-width: 320px; white-space: pre-wrap;
-            display: none;
-        }
-        #dev-iso-btn {
-            position: fixed; top: 14px; right: 14px; z-index: 25;
-            font-family: 'Impact', 'Anton', system-ui, sans-serif;
-            border-radius: 8px;
-            cursor: pointer;
-            user-select: none;
-            display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s ease;
-        }
-        #dev-iso-btn.need-iso {
-            background: linear-gradient(180deg, #ff4d4d 0%, #b31313 100%);
-            color: #fff;
-            border: 3px solid #fff;
-            padding: 10px 16px;
-            font-size: 1rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 900;
-            box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 rgba(255,80,80,.7);
-            animation: iso-pulse 1.6s ease-in-out infinite;
-        }
-        #dev-iso-btn.have-iso {
-            background: rgba(20,80,30,.8);
-            color: #b6ffb6;
-            border: 1px solid rgba(180,255,180,.4);
-            padding: 4px 10px;
-            font-size: 11px;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.4);
-        }
-        @keyframes iso-pulse {
-            0%,100% { box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 rgba(255,80,80,.0); transform: scale(1); }
-            50%     { box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 32px rgba(255,120,120,.85); transform: scale(1.04); }
-        }
-        #dev-iso-btn .dev-iso-icon { font-size: 1.3em; }
-        #dev-iso-btn.have-iso .dev-iso-icon { color: #b6ffb6; }
-        @media (max-width: 800px) {
-            #dev-iso-btn.need-iso {
-                padding: 7px 10px; font-size: 0.72rem; letter-spacing: 1px;
-                border-width: 2px;
-            }
-        }
-        /* Paste-URL row sits directly under the SETUP button, matches its
-           width so the two form a compact block. Hidden once ISO present. */
-        #dev-iso-url-row {
-            position: fixed; top: 72px; right: 14px; z-index: 25;
-            display: flex; gap: 6px;
-            width: 380px; max-width: calc(100vw - 28px);
-        }
-        #dev-iso-url {
-            flex: 1; min-width: 0;
-            background: rgba(20,20,25,.88);
-            color: #fff;
-            border: 2px solid rgba(255,255,255,.4);
-            border-radius: 6px;
-            padding: 8px 10px;
-            font: 12px system-ui;
-            letter-spacing: .3px;
-            outline: none;
-        }
-        #dev-iso-url::placeholder { color: rgba(255,255,255,.55); }
-        #dev-iso-url:focus { border-color: #ffcf3c; }
-        #dev-iso-url-btn {
-            background: linear-gradient(180deg, #ffcf3c 0%, #d18f00 100%);
-            color: #4a2900;
-            border: 2px solid #fff;
-            border-radius: 6px;
-            padding: 6px 12px;
-            font: 900 12px 'Impact', 'Anton', system-ui, sans-serif;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            box-shadow: 0 2px 0 rgba(0,0,0,.4);
-        }
-        #dev-iso-url-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.4); }
-        #dev-iso-btn.have-iso ~ #dev-iso-url-row { display: none; }
-        @media (max-width: 800px) {
-            #dev-iso-url-row { width: 260px; top: 60px; }
-            #dev-iso-url { font-size: 11px; padding: 6px 8px; }
-        }
     </style>
 </head>
 <body>
@@ -419,7 +329,7 @@
                 <div class="free-mods-left" id="free-mods"
                      onclick="window.promoStart()"
                      title=""
-                     aria-label="Free mods remaining">FREE MODS LEFT: 0</div>
+                     aria-label="Generations remaining">GENERATIONS LEFT: 0</div>
             </div>
             <div id="canvas-container">
                 <div id="avatar-loading" aria-live="polite">
@@ -431,34 +341,13 @@
     </div>
     <div id="roster"></div>
     <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">
-    <input id="dat-input"   type="file" accept=".dat,application/octet-stream"   style="display:none">
-    <input id="iso-input"   type="file" accept=".iso,.rvz,.gcz,application/octet-stream" style="display:none">
-    <div id="dev-iso-status"></div>
-    <!-- Dev ISO upload — needed for in-Dolphin screenshot tests. Painted
-         BIG + red when no ISO uploaded; small + green check when ready.
-         iso-status is polled on boot from /modder/iso-status.
-         Two paths: direct browser upload (fragile on mobile for 1.4 GB),
-         and paste a Mega / Drive URL (server pulls it, robust). -->
-    <div id="dev-iso-btn" onclick="window.uploadDevIso()"
-         class="need-iso"
-         title="Click to upload your Melee ISO from this device">
-        <span class="dev-iso-icon">⚠</span>
-        <span class="dev-iso-text">SETUP: UPLOAD MELEE ISO</span>
-    </div>
-    <div id="dev-iso-url-row">
-        <input id="dev-iso-url" type="url"
-               placeholder="…or paste Mega / Google Drive ISO link (server pulls it — walk away)"
-               autocomplete="off" spellcheck="false">
-        <button id="dev-iso-url-btn" onclick="window.fetchIsoFromUrl()">FETCH</button>
-    </div>
-
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
         /* Point at the standalone modder.js backend. Override with
            ?api=<origin> during local dev if needed. */
         const API = new URLSearchParams(location.search).get('api')
-                  || 'https://20sec.app/api-modder';
+                  || location.origin;
 
         /* Frontend-log pipe: every _dbg() line prints to console AND
            ships to the modder.js log ring buffer via /modder/frontlog,
@@ -563,7 +452,6 @@
         let clock = new THREE.Clock();
         let sceneReady = false;
         let currentRigId = null;
-        let currentBaseDatId = null;
         const _roster = [];
         /* Auto-spin ON by default and forever, unless the user grabs
            the character to rotate manually. On pointer-release we wait
@@ -828,12 +716,8 @@
                 + ' pos=(' + model.position.x.toFixed(2) + ',' + model.position.y.toFixed(2) + ',' + model.position.z.toFixed(2) + ')');
         }
 
-        /* Placeholder character has 3 Meshy-baked Goku dances (actions
-           82 = Shake_It_Off, 74 = Gangnam, 591 = Hip_Hop). Tap the
-           character to cycle: dance A → dance B → dance C → freeze
-           → (re-shuffle) → dance A' → ...  4-slot loop, Fisher-Yates
-           reshuffles at every wrap. Freeze = mixer paused. */
-        const _PLACEHOLDER_RIG = '019f7023-9cb8-7e08-aa05-5f628ab1c1f0';
+        // Optional preview asset configuration for local deployments.
+        const _PLACEHOLDER_RIG = '';
         const _PLACEHOLDER_ACTIONS = [82, 74, 591];
         let _placeholderClips  = [];   /* THREE.AnimationClip[] */
         let _placeholderMixerActions = [];  /* action objects on the current mixer */
@@ -850,7 +734,8 @@
         }
 
         function _loadPlaceholder() {
-            const url0 = 'https://d20.finance/dancer-anims/' + _PLACEHOLDER_RIG + '/' + _PLACEHOLDER_ACTIONS[0] + '.glb';
+            if (!_PLACEHOLDER_RIG) return;
+            const url0 = '/preview-assets/' + _PLACEHOLDER_RIG + '/' + _PLACEHOLDER_ACTIONS[0] + '.glb';
             _dbg('placeholder load start ' + url0);
             /* Spinner up until the mesh is in the scene. */
             const loadingEl = document.getElementById('avatar-loading');
@@ -885,7 +770,7 @@
                 /* Pre-fetch the other two dance GLBs in the background,
                    extract their clips, bind them to the same mixer. */
                 for (let i = 1; i < _PLACEHOLDER_ACTIONS.length; i++) {
-                    const u = 'https://d20.finance/dancer-anims/' + _PLACEHOLDER_RIG + '/' + _PLACEHOLDER_ACTIONS[i] + '.glb';
+                    const u = '/preview-assets/' + _PLACEHOLDER_RIG + '/' + _PLACEHOLDER_ACTIONS[i] + '.glb';
                     new THREE.GLTFLoader().load(u, g => {
                         if (!_placeholderActive) return;   /* user replaced with real char */
                         if (g.animations && g.animations.length) {
@@ -946,13 +831,7 @@
             setTimeout(() => document.getElementById('status-card').classList.remove('on'), delayMs || 800);
         }
 
-        /* ── Step machine ─────────────────────────────────────────
-           One button. Its label + action rotate through:
-             1. Upload Image       (photo picker → Meshy rigging)
-             2. Upload .DAT File   (base-DAT picker)
-             3. Download Skin      (streams the finished modded .DAT)
-           The step label chip above the button shows "Step N".
-           setStep(n) is the single source of truth for the UI state. */
+        // Upload an image, preview the generated model, then download it.
         function setStep(n) {
             const label = document.getElementById('step-label');
             const btn   = document.getElementById('step-btn');
@@ -967,12 +846,7 @@
                 label.textContent = 'Step 2';
                 label.classList.add('pipe');
                 btn.classList.add('pipe', 'calling-out');
-                btn.textContent   = 'Upload .DAT File';
-            } else if (n === 3) {
-                label.textContent = 'Step 3';
-                label.classList.add('coin');
-                btn.classList.add('coin', 'calling-out');
-                btn.textContent   = 'Build the mod';
+                btn.textContent   = 'Download Model';
             } else if (n === 'processing') {
                 label.textContent = 'Working…';
                 label.classList.add('done');
@@ -995,10 +869,10 @@
             el.classList.remove('bad');
             if (typeof n === 'number' && n > 0) {
                 el.classList.add('have');
-                el.textContent = 'FREE MODS LEFT: ' + n;
+                el.textContent = 'GENERATIONS LEFT: ' + n;
             } else {
                 el.classList.remove('have');
-                el.textContent = 'FREE MODS LEFT: 0';
+                el.textContent = 'GENERATIONS LEFT: 0';
             }
         }
         async function _promoCheck(code) {
@@ -1064,8 +938,7 @@
             const btn = document.getElementById('step-btn');
             const label = document.getElementById('step-label').textContent;
             if (label === 'Step 1') document.getElementById('photo-input').click();
-            else if (label === 'Step 2') document.getElementById('dat-input').click();
-            else if (label === 'Step 3') window.modProcess();
+            else if (label === 'Step 2' && currentRigId) location.href = API + '/modder/fbx/' + encodeURIComponent(currentRigId);
         };
 
         document.getElementById('photo-input').addEventListener('change', async function (e) {
@@ -1091,7 +964,7 @@
                 });
                 const j = await r.json();
                 if (r.status === 402) {
-                    status('This build is invite-only — click "FREE MODS LEFT" to enter a promo code.', 0);
+                    status('This build is invite-only — click "GENERATIONS LEFT" to enter a promo code.', 0);
                     statusHide(6000);
                     setStep(1);
                     _paintFreeMods(0);
@@ -1194,8 +1067,7 @@
         function _refreshButtons() {
             /* Advance to whichever step is next based on state. */
             if (!currentRigId) setStep(1);
-            else if (!currentBaseDatId) setStep(2);
-            else setStep(3);
+            else setStep(2);
         }
 
         function _rememberRoster(rigId, url) {
@@ -1214,208 +1086,6 @@
             document.querySelectorAll('.roster-thumb').forEach(el => el.classList.remove('active'));
             strip.appendChild(div);
         }
-
-        /* ── DAT upload → transitions to Step 3 ──────────────────── */
-        document.getElementById('dat-input').addEventListener('change', async function (e) {
-            const f = e.target.files && e.target.files[0];
-            if (!f) return;
-            e.target.value = '';
-            if (f.size > 4 * 1024 * 1024) {
-                status('DAT too big (max 4 MB)', 0);
-                statusHide(3000); return;
-            }
-            status('Uploading base .DAT…', 30);
-            setStep('processing');
-            const buf = await f.arrayBuffer();
-            const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-            try {
-                const r = await fetch(API + '/modder/base-dat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filename: f.name, data_b64: b64 }),
-                });
-                const j = await r.json();
-                if (!j.ok) throw new Error(j.error || 'upload failed');
-                currentBaseDatId = j.dat_id;
-                status('.DAT saved: ' + f.name, 100);
-                statusHide();
-                _refreshButtons();
-            } catch (err) {
-                status('DAT upload failed: ' + err.message, 0);
-                statusHide(4000);
-                setStep(2);
-            }
-        });
-
-        window.modProcess = async function () {
-            if (!currentRigId || !currentBaseDatId) return;
-            status('Splicing your character into the base .DAT…', 40);
-            setStep('processing');
-            try {
-                const r = await fetch(API + '/modder/process/' + currentRigId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ base_dat_id: currentBaseDatId }),
-                });
-                const j = await r.json();
-                if (!j.ok) throw new Error(j.error || 'process failed');
-                if (j.status === 'wip') {
-                    status('Splice engine not yet wired — coming next update.', 100);
-                    statusHide(6000);
-                    setStep(3);
-                    return;
-                }
-                /* Three success cases:
-                   - dat_ready         → full auto: modded .dat downloaded, ready for Melee
-                   - fbx_ready_dat_failed → Blender OK but HSDLib splice failed; give FBX for manual finish
-                   - fbx_ready         → v0.75 fallback (kept for older builds); FBX only */
-                const filename = j.output_filename
-                              || ('mod-' + currentRigId.slice(-8) + '.dat');
-                const a = document.createElement('a');
-                a.href = API + j.download_path;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                if (j.status === 'dat_ready') {
-                    status('Modded .DAT downloaded.\nDrop it into your Melee ISO via Texture Wizard and load it up.', 100);
-                    statusHide(10000);
-                } else if (j.status === 'fbx_ready_dat_failed' || j.status === 'fbx_ready') {
-                    status('Rigged FBX downloaded.\nHSDLib splice failed on this one — open the .fbx in HSDRaw ▶ Import Mesh to finish manually (~10s).', 100);
-                    statusHide(15000);
-                } else {
-                    status('Modded file ready — downloading…', 100);
-                    statusHide(3000);
-                }
-                setStep(3);
-            } catch (err) {
-                status('Process failed: ' + err.message, 0);
-                statusHide(5000);
-                setStep(3);
-            }
-        };
-
-        /* ── Dev ISO uploader (bottom-right) ─────────────────────
-           Streams a Melee ISO straight to the server via
-           /modder/dev-iso with XHR so we get upload-progress %.
-           Reused as the source ISO for the future in-game test loop. */
-        window.uploadDevIso = function () {
-            document.getElementById('iso-input').click();
-        };
-        function isoStatus(text) {
-            const el = document.getElementById('dev-iso-status');
-            el.textContent = text; el.style.display = 'block';
-        }
-        function isoStatusHideLater(ms) {
-            setTimeout(() => document.getElementById('dev-iso-status').style.display = 'none', ms || 10000);
-        }
-        function _isoPaint(hasIso, name, mb) {
-            const btn = document.getElementById('dev-iso-btn');
-            if (!btn) return;
-            if (hasIso) {
-                btn.classList.remove('need-iso');
-                btn.classList.add('have-iso');
-                btn.querySelector('.dev-iso-icon').textContent = '✓';
-                btn.querySelector('.dev-iso-text').textContent = 'ISO ready (' + mb + ' MB) — re-upload';
-                btn.title = 'ISO: ' + name;
-            } else {
-                btn.classList.remove('have-iso');
-                btn.classList.add('need-iso');
-                btn.querySelector('.dev-iso-icon').textContent = '⚠';
-                btn.querySelector('.dev-iso-text').textContent = 'SETUP: UPLOAD MELEE ISO';
-                btn.title = 'Upload your own Melee ISO for the in-game test loop';
-            }
-        }
-        function _refreshIsoStatus() {
-            fetch(API + '/modder/iso-status').then(r => r.json()).then(j => {
-                if (j.ok && j.count > 0) {
-                    /* Ignore accidental small drops (test .DATs etc.) — a real
-                       Melee ISO is >= 500 MB. Anything smaller doesn't count. */
-                    const real = (j.isos || []).find(i => i.size >= 500 * 1024 * 1024);
-                    if (real) return _isoPaint(true, real.name, Math.round(real.size / 1024 / 1024));
-                }
-                _isoPaint(false);
-            }).catch(() => {});
-        }
-        _refreshIsoStatus();
-        window.fetchIsoFromUrl = function () {
-            const inp = document.getElementById('dev-iso-url');
-            const url = (inp.value || '').trim();
-            if (!/^https:\/\//.test(url)) { isoStatus('paste a full https:// link'); isoStatusHideLater(4000); return; }
-            isoStatus('starting server-side fetch…');
-            fetch(API + '/modder/dev-iso-from-url', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: url }),
-            }).then(r => r.json()).then(j => {
-                if (!j.ok) { isoStatus('start fail: ' + (j.error || '?')); isoStatusHideLater(5000); return; }
-                isoStatus('fetching…\n' + (j.filename || 'iso') + '\nyou can close this tab; server is downloading');
-                inp.value = '';
-                const jid = j.job_id;
-                const tick = () => {
-                    fetch(API + '/modder/dev-iso-from-url/' + jid).then(r => r.json()).then(k => {
-                        if (!k.ok) return;
-                        const st = k.job;
-                        if (st.status === 'done') {
-                            const mb = Math.round(st.received / 1024 / 1024);
-                            isoStatus('ISO fetched ✓\n' + (st.filename || '?') + ' (' + mb + ' MB)');
-                            isoStatusHideLater(15000);
-                            _refreshIsoStatus();
-                            return;
-                        }
-                        if (st.status === 'error') {
-                            isoStatus('fetch failed: ' + (st.err || '?'));
-                            isoStatusHideLater(10000);
-                            return;
-                        }
-                        const pct = st.total ? Math.round((st.received / st.total) * 100) : Math.round(st.received);
-                        const mb  = st.total ? Math.round(st.received / 1024 / 1024) + '/' + Math.round(st.total / 1024 / 1024) + ' MB'
-                                             : Math.round(st.received) + ' (Mega %)';
-                        isoStatus('fetching ' + pct + '%  ' + mb + '\n(server is downloading; refresh anytime)');
-                        setTimeout(tick, 3000);
-                    }).catch(() => setTimeout(tick, 5000));
-                };
-                setTimeout(tick, 1500);
-            }).catch(err => { isoStatus('network error: ' + err.message); isoStatusHideLater(); });
-        };
-        document.getElementById('iso-input').addEventListener('change', function (e) {
-            const f = e.target.files && e.target.files[0];
-            if (!f) return;
-            e.target.value = '';
-            /* Melee ISOs are ~1.4 GB uncompressed; RVZ ~500 MB. Warn on
-               anything under 100 MB (probably wrong file). */
-            if (f.size < 100 * 1024 * 1024) {
-                isoStatus('too small (' + Math.round(f.size / 1024 / 1024) + ' MB) — Melee ISO is ~1.4 GB or ~500 MB as RVZ');
-                isoStatusHideLater();
-                return;
-            }
-            const url = API + '/modder/dev-iso?name=' + encodeURIComponent(f.name);
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url);
-            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-            xhr.upload.onprogress = ev => {
-                if (!ev.lengthComputable) return;
-                const pct = Math.round((ev.loaded / ev.total) * 100);
-                const mb  = Math.round(ev.loaded / 1024 / 1024);
-                const tot = Math.round(ev.total  / 1024 / 1024);
-                isoStatus('uploading ' + pct + '%  ' + mb + '/' + tot + ' MB');
-            };
-            xhr.onload = () => {
-                try {
-                    const j = JSON.parse(xhr.responseText);
-                    if (!j.ok) throw new Error(j.error || ('HTTP ' + xhr.status));
-                    isoStatus('ISO stored ✓\n' + j.filename + '\n' + Math.round(j.size / 1024 / 1024) + ' MB, sha=' + j.sha256.slice(0, 12) + '\nin ' + j.seconds.toFixed(1) + 's');
-                    isoStatusHideLater(20000);
-                    _refreshIsoStatus();
-                } catch (err) {
-                    isoStatus('upload fail: ' + err.message + '\n' + xhr.responseText.slice(0, 200));
-                    isoStatusHideLater();
-                }
-            };
-            xhr.onerror = () => { isoStatus('network error'); isoStatusHideLater(); };
-            isoStatus('starting upload ' + f.name + ' (' + Math.round(f.size / 1024 / 1024) + ' MB)…');
-            xhr.send(f);
-        });
 
         /* Fullscreen toggle — clicked on the IMAGE TO MOD title.
            Standard + -webkit- fallbacks for iOS Safari. Errors swallowed
