@@ -1,5 +1,5 @@
 {
-  "name": "image-to-mod",
+  "name": "automodder-mcp",
   "version": "0.1.0",
   "private": true,
   "description": "Image-based character creation with browser preview and model downloads.",
